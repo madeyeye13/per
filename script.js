@@ -227,4 +227,50 @@ testimonialSection.addEventListener('mouseleave', startAutoSlide);
 showTestimonial(currentTestimonial);
 startAutoSlide();
 
+
+
+///FORM SUBMISSION FOR FOOTER
+
+
+document.getElementById('subscribeForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const email = document.getElementById('email').value;
+    const formData = new FormData();
+    formData.append('email', email);
+
+    // Send form data to Formspree using fetch
+    fetch('https://formspree.io/f/mdkonokq', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            // Show success message after 7 seconds
+            setTimeout(() => {
+                const successMessage = document.getElementById('successMessage');
+                successMessage.style.display = 'block';
+
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            }, 7000);
+
+            // Reset the form
+            document.getElementById('subscribeForm').reset();
+        } else {
+            alert('Oops! There was a problem submitting your form.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('There was an error submitting the form.');
+    });
+});
+
+
   

@@ -237,6 +237,55 @@
 }
 
 
+.sow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.work-card {
+    padding-left: 0px;
+    padding-right: 0px;
+    perspective: 1000px; /* Creates 3D space for flip effect */
+}
+
+
+/*===============FOOTER===========*/
+
+.footer-cta {
+    border-bottom: 1px solid #373636;
+    padding-top: 30px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.footer-content {
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
+.mb-50 p{
+    padding-right: 40px;
+
+}
+
+.footer-text p {
+    margin-bottom: 14px;
+    font-size: 1em;
+      color: var(--white-color);
+      font-family: var(--font-2);
+      font-weight: 400;
+    line-height: 28px;
+    
+}
+
+.copyright-area{
+    background: var(--dark-main-color);
+    padding: 25px 0;
+    padding-left: 50px;
+  }
+
+
+
 
 
 }
@@ -473,6 +522,96 @@
         text-align: center;
         margin-top: 100px;
         
+    }
+
+
+
+
+    /*============SEE OUR WORK==========*/
+
+    .sow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        
+        
+        min-width: 110%;
+        overflow: hidden;
+        
+    }
+
+
+    .see-our-work {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px; 
+        padding: 70px;
+        overflow: hidden;
+        
+    }
+
+
+    .work-card-inner {
+        position: relative;
+        width: 300px; 
+        height: 400px; 
+        transform-style: preserve-3d;
+        transition: transform 0.6s ease-in-out;
+    }
+
+
+
+    .work-card {
+        
+        perspective: 1000px; /* Creates 3D space for flip effect */
+    }
+
+
+
+
+
+
+
+    /*=========FOOTER========*/
+
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        margin-bottom: 30px;
+        margin-top: 30px;
+    }
+
+    .footer-cta {
+        margin-top: 30px;
+    }
+
+
+    .footer-content {
+        position: relative;
+        z-index: 2;
+        padding-left: 70px;
+        padding-right: 70px;
+        margin-top: 100px;
+    }
+
+
+    .footer-text p {
+        margin-bottom: 14px;
+        font-size: 0.8em;
+          color: var(--white-color);
+          font-family: var(--font-2);
+          font-weight: 400;
+        line-height: 28px;
+        
+    }
+
+    .mb-50{
+        position: relative;
+        bottom: 30px;
+        width: 40%;
     }
 
 
