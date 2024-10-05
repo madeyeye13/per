@@ -131,6 +131,9 @@
 
 
 
+body {
+  overflow: hidden;
+}
 
 /*============HEADER===========*/
 
@@ -231,6 +234,7 @@ header {
 .hero {
     position: relative;
     height: 100%;
+    overflow: hidden;
 }
 
 .slide {
