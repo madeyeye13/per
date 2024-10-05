@@ -131,9 +131,9 @@
 
 
 
-body {
+/* body {
   overflow: hidden;
-}
+} */
 
 /*============HEADER===========*/
 
@@ -824,6 +824,7 @@ opacity: 1;
     gap: 20px; 
     padding: 20px;
     margin-bottom: 50px;
+    overflow: hidden;
 }
 
 .sow {
