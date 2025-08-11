@@ -186,6 +186,40 @@
 
         }
 
+        .math-captcha {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .math-question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .error-message {
+            display: none;
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Honeypot field - completely hidden */
+        .honeypot {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px !important;
+            height: 1px !important;
+            overflow: hidden !important;
+            clip: rect(1px, 1px, 1px, 1px) !important;
+            white-space: nowrap !important;
+        }
+
         /*-------MEDIA QUERY----------*/
 
 
@@ -313,6 +347,10 @@
     
     
             <form id="contact-form" action="https://formspree.io/f/mwpkeorp" method="POST">
+                <div class="honeypot">
+                    <label for="website">Website (leave blank)</label>
+                    <input type="text" id="website" name="_gotcha" tabindex="-1" autocomplete="off">
+                </div>
                 <label for="name">Full Name</label>
                 <input type="text" id="name" name="name" required placeholder="Enter your full name">
     
@@ -339,7 +377,15 @@
     
                 <label for="message">Message</label>
                 <textarea id="message" name="message" rows="5" placeholder="Tell us more about your event"></textarea>
-    
+
+                <!-- Math CAPTCHA -->
+                <div class="math-captcha">
+                    <label for="captcha">Security Check: What is <span id="math-question" class="math-question"></span>?</label>
+                    <input type="number" id="captcha" name="captcha" required placeholder="Enter the answer">
+                    <input type="hidden" id="captcha-answer" name="captcha-answer">
+                </div>
+
+                
                 <button type="submit">Submit</button>
             </form>
 
@@ -667,18 +713,117 @@
     </script>
 
     <script>
+        let formStartTime = Date.now();
+        let correctAnswer = 0;
 
+        // Generate math CAPTCHA question
+        function generateMathCaptcha() {
+            const num1 = Math.floor(Math.random() * 15) + 1; // 1-15
+            const num2 = Math.floor(Math.random() * 15) + 1; // 1-15
+            correctAnswer = num1 + num2;
+            
+            document.getElementById('math-question').textContent = `${num1} + ${num2}`;
+            document.getElementById('captcha-answer').value = correctAnswer;
+            
+            // Clear the input field
+            document.getElementById('captcha').value = '';
+        }
+
+        // Generate initial CAPTCHA when page loads
+        generateMathCaptcha();
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess() {
+            const successDiv = document.getElementById('success-message');
+            successDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Validate form inputs for suspicious patterns
+        function validateInputs(formData) {
+            const name = formData.get('name').trim();
+            const location = formData.get('location').trim();
+            
+            // Check for gibberish patterns (all lowercase/uppercase letters, no spaces, 8+ chars)
+            const gibberishPattern = /^[a-zA-Z]{8,}$/;
+            
+            if (gibberishPattern.test(name)) {
+                showError('Please enter a valid name.');
+                return false;
+            }
+            
+            if (location && gibberishPattern.test(location)) {
+                showError('Please enter a valid location.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Handle form submission
         document.getElementById("contact-form").addEventListener("submit", async function(event) {
-            event.preventDefault();  // Prevent default form submission behavior
-
-            // Get the form element
+            event.preventDefault();
+            
             const form = event.target;
-
-            // Create FormData object to capture the form data
             const formData = new FormData(form);
-
+            const submitBtn = document.getElementById('submit-btn');
+            
+            // Hide any existing messages
+            document.getElementById('success-message').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+            
+            // 1. Check honeypot field
+            if (formData.get('_gotcha') && formData.get('_gotcha').trim() !== '') {
+                console.log('Bot detected via honeypot - submission blocked');
+                showError('Submission blocked. Please try again.');
+                return;
+            }
+            
+            // 2. Check submission speed (must spend at least 3 seconds on form)
+            const submissionTime = Date.now();
+            const timeSpent = submissionTime - formStartTime;
+            
+            if (timeSpent < 3000) {
+                showError('Please take a moment to fill out the form properly.');
+                return;
+            }
+            
+            // 3. Validate math CAPTCHA
+            const userAnswer = parseInt(formData.get('captcha'));
+            
+            if (isNaN(userAnswer) || userAnswer !== correctAnswer) {
+                showError('Please solve the math problem correctly.');
+                generateMathCaptcha(); // Generate new question
+                return;
+            }
+            
+            // 4. Validate input patterns
+            if (!validateInputs(formData)) {
+                return;
+            }
+            
+            // 5. All checks passed - submit form
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
             try {
-                // Send the form data using Fetch API to Formspree
                 const response = await fetch(form.action, {
                     method: form.method,
                     body: formData,
@@ -688,26 +833,43 @@
                 });
 
                 if (response.ok) {
-                    // Show the success message
-                    const successMessage = document.getElementById("success-message");
-                    successMessage.style.display = "block";
-
-                    // Hide the success message after 5 seconds
-                    setTimeout(() => {
-                        successMessage.style.display = "none";
-                    }, 5000);
-
-                    // Reset the form
+                    showSuccess();
                     form.reset();
+                    generateMathCaptcha(); // Generate new CAPTCHA for next use
+                    formStartTime = Date.now(); // Reset timer
                 } else {
-                    console.error("Form submission failed.");
+                    const data = await response.json();
+                    if (data.errors) {
+                        showError(data.errors.map(error => error.message).join(', '));
+                    } else {
+                        showError('There was a problem submitting your form. Please try again.');
+                    }
                 }
             } catch (error) {
-                console.error("Error submitting the form:", error);
+                console.error('Error submitting form:', error);
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
             }
         });
 
-
+        // Regenerate CAPTCHA if user clicks on the math question
+        document.getElementById('math-question').addEventListener('click', function() {
+            generateMathCaptcha();
+        });
+        
+        // Add some basic input sanitization
+        document.addEventListener('DOMContentLoaded', function() {
+            const textInputs = document.querySelectorAll('input[type="text"], input[type="email"], textarea');
+            
+            textInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Remove any suspicious characters that might indicate injection attempts
+                    this.value = this.value.replace(/[<>\"']/g, '');
+                });
+            });
+        });
     </script>
 
     
